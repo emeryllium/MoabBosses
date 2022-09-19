@@ -8,5 +8,6 @@
 
         public const string RepoOwner = "emeryllium";
         public const string RepoName = "MoabBosses";
+        public const string Icon = "Icon.png";
     }
 }
