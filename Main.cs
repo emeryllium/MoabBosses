@@ -1,68 +1,69 @@
-﻿using Assets.Scripts.Models.Rounds;
-using Assets.Scripts.Unity;
-using BTD_Mod_Helper;
-using MelonLoader;
-using System;
-using System.Threading.Tasks;
+﻿using BTD_Mod_Helper;
 
+using BTD_Mod_Helper.Api.Enums;
+using BTD_Mod_Helper.Api.Bloons;
+using BTD_Mod_Helper.Api.ModOptions;
+
+using Il2CppAssets.Scripts.Data.Boss;
+using Il2CppAssets.Scripts.Models.Rounds;
+using MelonLoader;
+
+[assembly: MelonInfo(typeof(MoabBosses.Main), "Moab Bosses", "1.1.0", "emeryllium")]
+[assembly: MelonGame("Ninja Kiwi", "BloonsTD6")]
 namespace MoabBosses
 {
     public class Main : BloonsTD6Mod
     {
-        public static string boss = "Bloonarius";
-
-        public override void OnMainMenu()
+        public static readonly ModSettingEnum<BossType> boss = new(BossType.Bloonarius)
         {
-            base.OnMainMenu();
+            labelFunction = x => x.ToString()
+        };
+    }
 
-            MelonLogger.Msg(ConsoleColor.Blue, "Type the boss you would like to spawn (ex. \"Bloonarius\")");
-
-            GetInputAsync();
+    public class RoundSet : ModRoundSet
+    {
+        public override string BaseRoundSet => RoundSetType.Default;
+        public override int DefinedRounds => BaseRounds.Count;
+        public override string DisplayName => "Moab Bosses";
+        public override string Icon {
+            get
+            {
+                return Main.boss.GetValue() switch
+                {
+                    BossType.Bloonarius => VanillaSprites.BloonariusBadge,
+                    BossType.Lych => VanillaSprites.LychBadge,
+                    BossType.Vortex => VanillaSprites.VortexBadge,
+                    BossType.Phayze => VanillaSprites.PhayzeBadge,
+                    BossType.Dreadbloon => VanillaSprites.DreadbloonBadge,
+                    BossType.Blastapopoulos => VanillaSprites.BlastapopoulosBadge,
+                    _ => VanillaSprites.BossMedalEventGoldSilverMedal,
+                };
+            }
+        }
+        public override void ModifyRoundModels(RoundModel roundModel, int round)
+        {
+            foreach (var group in roundModel.groups)
+            {
+                group.bloon = promoteBloon(group.bloon, Main.boss.Name);
+            }
         }
 
         public static string promoteBloon(string bloon, string boss)
         {
-            //I swear i tried to use dictionaries and lists but it crashes for no reason
-            if (bloon == "Moab") return boss + "1";
-            if (bloon == "MoabFortified") return boss + "Elite1";
-            if (bloon == "Bfb") return boss + "2";
-            if (bloon == "BfbFortified") return boss + "Elite2";
-            if (bloon == "Zomg") return boss + "3";
-            if (bloon == "ZomgFortified") return boss + "Elite3";
-            if (bloon == "DdtCamo") return boss + "4";
-            if (bloon == "DdtFortifiedCamo") return boss + "Elite4";
-            if (bloon == "Bad") return boss + "5";
-            if (bloon == "BadFortified") return boss + "Elite5";
-            return bloon;
-        }
-        private async void GetInputAsync()
-        {
-            boss = await Task.Run(() => Console.ReadLine());
-
-            if (boss != "Bloonarius" && boss != "Lych" && boss != "Vortex")
+            return bloon switch
             {
-                MelonLogger.Msg(ConsoleColor.Blue, "ERROR: Not a valid boss (yell at emeryllium if this is wrong lmao).");
-                boss = "Bloonarius";
-            }
-            else
-            {
-                MelonLogger.Msg(ConsoleColor.Blue, boss + " Loaded.");
-            }
-
-            for (int i = 0; i < Game.instance.model.roundSets.Length; i++)
-            {
-                RoundSetModel roundSet = Game.instance.model.roundSets[i];
-                for (int j = 0; j < roundSet.rounds.Length; j++)
-                {
-                    RoundModel round = roundSet.rounds[j];
-
-                    for (int k = 0; k < round.groups.Length; k++)
-                    {
-                        BloonGroupModel bloonGroup = round.groups[k];
-                        bloonGroup.bloon = promoteBloon(bloonGroup.bloon, boss);
-                    }
-                }
-            }
+                "Moab" => boss + "1",
+                "MoabFortified" => boss + "Elite1",
+                "Bfb" => boss + "2",
+                "BfbFortified" => boss + "Elite2",
+                "Zomg" => boss + "3",
+                "ZomgFortified" => boss + "Elite3",
+                "DdtCamo" => boss + "4",
+                "DdtFortifiedCamo" => boss + "Elite4",
+                "Bad" => boss + "5",
+                "BadFortified" => boss + "Elite5",
+                _ => bloon,
+            };
         }
     }
 }
