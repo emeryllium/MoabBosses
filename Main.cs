@@ -44,12 +44,13 @@ namespace MoabBosses
         {
             foreach (var group in roundModel.groups)
             {
-                group.bloon = promoteBloon(group.bloon, Main.boss.Name);
+                group.bloon = promoteBloon(group.bloon);
             }
         }
 
-        public static string promoteBloon(string bloon, string boss)
+        public static string promoteBloon(string bloon)
         {
+            string boss = Main.boss.GetValue().ToString();
             return bloon switch
             {
                 "Moab" => boss + "1",
